@@ -19,3 +19,7 @@ dotnet dev-certs https --trust
 
 
 kubectl rollout restart deployment platforms-depl 
+
+
+dotnet tool install --global dotnet-ef --version 5.*
+dotnet ef migrations add initialmigration

@@ -3,22 +3,36 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace PlatformService.Data
 {
     public static class PrepDb
     {
-        public static void PrepPopulaton(IApplicationBuilder app)
+        public static void PrepPopulaton(IApplicationBuilder app, bool isProd)
         {
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
-                SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>());
+                SeedData(serviceScope.ServiceProvider.GetService<AppDbContext>(), isProd);
             }
         }
 
-        private static void SeedData(AppDbContext context)
+        private static void SeedData(AppDbContext context, bool isProd)
         {
+            if(isProd)
+            {
+                Console.WriteLine("--> Attempting to apply migrations...");
+                try
+                {
+                    context.Database.Migrate();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"--> Could not run migrations: {ex.Message}");
+                }
+            }
+
             if (!context.Platforms.Any())
             {
                 Console.WriteLine("--> SeedData...");

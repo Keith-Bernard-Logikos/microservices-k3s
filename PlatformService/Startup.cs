@@ -19,20 +19,34 @@ namespace PlatformService
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IConfiguration Configuration { get; }
+
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
-
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            if (_env.IsProduction())
+            {
+                Console.WriteLine("--> Using SqlServer Db");
+                services.AddDbContext<AppDbContext>(opt => 
+                    opt.UseSqlServer(Configuration.GetConnectionString("PlatformsConn")));
+            }
+            else
+            {
+                Console.WriteLine("--> Using InMem Db");
+                services.AddDbContext<AppDbContext>(
+                    opt => opt.UseInMemoryDatabase("InMem"));                
+            }
+
             services.AddScoped<IPlatformRepo, PlatformRepo>();
             
             services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
-
-            services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMem"));
 
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies())
@@ -53,7 +67,7 @@ namespace PlatformService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "PlatformService v1"));
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseRouting();
 
@@ -64,7 +78,7 @@ namespace PlatformService
                 endpoints.MapControllers();
             });
 
-            PrepDb.PrepPopulaton(app);
+            PrepDb.PrepPopulaton(app, env.IsProduction());
         }
     }
 }
