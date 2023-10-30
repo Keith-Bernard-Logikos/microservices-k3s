@@ -24,4 +24,4 @@ kubectl create secret generic mssql --from-literal=SA_PASSWORD="pa55wOrd!"
 # HOST: 192.168.254.176  PORT: 32757 (mssql-loadbalancer port - external port)
 # DATABASE: master
 # AUTHENTICATION: SQL Server 
-# USERNAME: sa PASSWORD pa55wOrd! (from secret)
+# Authentication USERNAME: sa PASSWORD pa55wOrd! (from secret)
